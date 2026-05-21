@@ -37,8 +37,14 @@ body{font-family:'Apple SD Gothic Neo','Malgun Gothic',sans-serif;background:var
 .cl input{accent-color:var(--p);width:13px;height:13px}
 .sw{position:relative;margin-bottom:5px}
 .si{width:100%;padding:6px 27px 6px 9px;border:1px solid var(--bd);border-radius:6px;font-size:12px;outline:none;transition:border .15s;background:var(--sf);color:var(--tx)}
+.si::-webkit-search-cancel-button{-webkit-appearance:none;display:none}
+.si::-webkit-search-decoration{-webkit-appearance:none}
 .si:focus{border-color:var(--p);box-shadow:0 0 0 3px rgba(26,86,219,.1)}
 .sc{position:absolute;right:6px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;color:var(--tm);font-size:13px}
+.search-btn{width:100%;margin-top:5px;padding:7px 9px;border:1px solid var(--p);border-radius:6px;background:var(--p);color:#fff;font-size:12px;font-weight:700;cursor:pointer;transition:background .15s}
+.search-btn:hover{background:var(--pd)}
+.search-hint{font-size:11px;color:var(--tm);margin-top:4px;line-height:1.4}
+
 .al{position:absolute;top:calc(100% + 2px);left:0;right:0;background:var(--sf);border:1px solid var(--bd);border-radius:6px;max-height:175px;overflow-y:auto;z-index:300;box-shadow:var(--shm);display:none}
 .al.show{display:block}
 .ai{padding:6px 10px;cursor:pointer;font-size:12px;border-bottom:1px solid var(--bg);color:var(--tx)}
@@ -145,6 +151,14 @@ mark{background:#fef08a;padding:0 1px;border-radius:2px;color:inherit}
   .mc{height:auto}
 }
 .mob-cards{display:none;padding:8px}
+@media(max-width:768px){
+  .mob-cards{display:block !important}
+  .tw{display:none !important}
+  .tabs{overflow-x:auto;padding:0 8px}
+  .tb{padding:10px 11px}
+  .tr{display:none}
+  .rbar{position:sticky;top:0;z-index:20}
+}
 .mcard{background:var(--sf);border:1px solid var(--bd);border-radius:8px;padding:11px;margin-bottom:8px;box-shadow:var(--sh)}
 .mcard.jr{background:var(--jbg);border-color:#fde68a}
 .mcard.er{background:var(--ebg);border-color:#86efac}
@@ -181,7 +195,10 @@ mark{background:#fef08a;padding:0 1px;border-radius:2px;color:inherit}
 
 <div class="layout">
   <aside class="sidebar" id="sidebar">
-    <button class="rbtn" onclick="resetAll()">🔄 전체 조건 초기화</button>
+    <div class="top-actions">
+      <button class="rbtn" onclick="resetAll()">🔄 전체 조건 초기화</button>
+      <button type="button" class="search-btn" onclick="runSearchAll()">검색</button>
+    </div>
 
     <div class="fs">
       <div class="fsh" onclick="toggleFS(this)">📍 소재지 <span class="chev o">▾</span></div>
@@ -219,10 +236,11 @@ mark{background:#fef08a;padding:0 1px;border-radius:2px;color:inherit}
       <div class="fsh" onclick="toggleFS(this)">📖 표시과목 검색 <span class="chev o">▾</span></div>
       <div class="fsb">
         <div class="sw">
-          <input type="text" id="si-subj" class="si" placeholder="예: 국어, 수학, 보건교사…" oninput="onSI('subj')" onfocus="showAL('al-subj')" onblur="hideAL('al-subj')">
+          <input type="search" id="si-subj" class="si" placeholder="예: 국어, 수학, 보건교사…" oninput="onSI('subj')" onfocus="showAL('al-subj')" onblur="hideAL('al-subj')" onkeydown="if(event.key==='Enter')event.preventDefault();" onkeyup="handleSearchEnter(event,'subj')" onsearch="onSI('subj');applyF();pushURL();">
           <button class="sc" onclick="clrS('si-subj','al-subj','subjectQ')">✕</button>
           <div class="al" id="al-subj"></div>
         </div>
+        <div class="search-hint">검색어 입력 후 상단 검색 버튼을 누르세요. Enter도 보조로 작동합니다.</div>
       </div>
     </div>
 
@@ -230,10 +248,11 @@ mark{background:#fef08a;padding:0 1px;border-radius:2px;color:inherit}
       <div class="fsh" onclick="toggleFS(this)">🔍 대학명 검색 <span class="chev o">▾</span></div>
       <div class="fsb">
         <div class="sw">
-          <input type="text" id="si-univ" class="si" placeholder="대학명 또는 초성 (ㅎㅇㄷ)…" oninput="onSI('univ')" onfocus="showAL('al-univ')" onblur="hideAL('al-univ')">
+          <input type="search" id="si-univ" class="si" placeholder="대학명 또는 초성 (ㅎㅇㄷ)…" oninput="onSI('univ')" onfocus="showAL('al-univ')" onblur="hideAL('al-univ')" onkeydown="if(event.key==='Enter')event.preventDefault();" onkeyup="handleSearchEnter(event,'univ')" onsearch="onSI('univ');applyF();pushURL();">
           <button class="sc" onclick="clrS('si-univ','al-univ','univQ')">✕</button>
           <div class="al" id="al-univ"></div>
         </div>
+        <div class="search-hint">대학명을 입력한 뒤 상단 검색 버튼을 누르세요.</div>
       </div>
     </div>
 
@@ -241,9 +260,10 @@ mark{background:#fef08a;padding:0 1px;border-radius:2px;color:inherit}
       <div class="fsh" onclick="toggleFS(this)">🔬 학과명 검색 <span class="chev o">▾</span></div>
       <div class="fsb">
         <div class="sw">
-          <input type="text" id="si-dept" class="si" placeholder="학과명 입력…" oninput="applyF()">
+          <input type="search" id="si-dept" class="si" placeholder="학과명 입력…" oninput="applyF()" onkeydown="if(event.key==='Enter')event.preventDefault();" onkeyup="handleSearchEnter(event,'dept')" onsearch="applyF();pushURL();">
           <button class="sc" onclick="clrS('si-dept',null,'deptQ')">✕</button>
         </div>
+        <div class="search-hint">학과명을 입력한 뒤 상단 검색 버튼을 누르세요.</div>
       </div>
     </div>
   </aside>
@@ -402,6 +422,54 @@ function updAL(id,items,q,fn){
 function showAL(id){const e=document.getElementById(id);if(e.children.length)e.classList.add('show')}
 function hideAL(id){setTimeout(()=>document.getElementById(id).classList.remove('show'),200)}
 function clrS(iid,aid,key){document.getElementById(iid).value='';S[key]='';if(aid)document.getElementById(aid).classList.remove('show');applyF();pushURL()}
+
+function syncSearchState(){
+  S.subjectQ=document.getElementById('si-subj').value.trim();
+  S.univQ=document.getElementById('si-univ').value.trim();
+  S.deptQ=document.getElementById('si-dept').value.trim();
+}
+
+function runSearchFromInput(type,el){
+  syncSearchState();
+  if(type==='subj'){
+    updAL('al-subj',META.subjects,S.subjectQ,selSubj);
+    document.getElementById('al-subj').classList.remove('show');
+  }
+  if(type==='univ'){
+    updAL('al-univ',[...new Set(RAW_DATA.map(r=>r['대학명']))],S.univQ,selUniv);
+    document.getElementById('al-univ').classList.remove('show');
+  }
+  applyF();
+  pushURL();
+  if(el)el.blur();
+}
+
+function runSearchAll(){
+  syncSearchState();
+  ['al-subj','al-univ'].forEach(id=>{
+    const el=document.getElementById(id);
+    if(el)el.classList.remove('show');
+  });
+  applyF();
+  pushURL();
+}
+
+function handleSearchEnter(e,type){
+  if(e.key!=='Enter')return true;
+  e.preventDefault();
+  const el=e.currentTarget;
+  setTimeout(()=>runSearchFromInput(type,el),80);
+  return false;
+}
+
+function bindSearchEnterFallback(){
+  [['si-subj','subj'],['si-univ','univ'],['si-dept','dept']].forEach(([id,type])=>{
+    const el=document.getElementById(id);
+    if(!el)return;
+    el.addEventListener('compositionend',()=>setTimeout(()=>{syncSearchState();applyF();pushURL();},0));
+    el.addEventListener('change',()=>runSearchFromInput(type,null));
+  });
+}
 
 // ===== APPLY FILTERS =====
 function applyF(){
@@ -576,7 +644,7 @@ function copyURL(){
 }
 
 // ===== INIT =====
-document.addEventListener('DOMContentLoaded',()=>{initDark();loadFavs();initF();updFavB()});
+document.addEventListener('DOMContentLoaded',()=>{initDark();loadFavs();initF();bindSearchEnterFallback();updFavB()});
 </script>
 </body>
 </html>
